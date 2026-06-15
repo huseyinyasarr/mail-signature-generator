@@ -320,7 +320,7 @@ const imageCell = (data) => {
 };
 
 const detailsTable = (data) => {
-  const { accent, textColor, muted, pale } = getTokens(data);
+  const { accent, textColor, muted } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const ctaUrl = normalizeUrl(data.ctaUrl);
   const socials = [
@@ -334,7 +334,7 @@ const detailsTable = (data) => {
     .join('<span style="display:inline-block;margin-right:8px;color:#c7ced6;">|</span>');
 
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:${pale};border-left:3px solid ${accent};">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
       <tr>
         <td style="padding:10px 12px 4px;font-family:${escapeHtml(data.fontFamily)};">
           <div style="font-size:18px;line-height:22px;font-weight:bold;color:${textColor};">${escapeHtml(data.name)}</div>
@@ -363,12 +363,18 @@ const disclaimerRow = (data) =>
     : "";
 
 const buildClassic = (data) => {
-  const { font } = getTokens(data);
+  const { accent, font, pale } = getTokens(data);
+  const size = Number(data.imageSize) || 76;
+  const radius = data.roundedImage ? "999px" : "8px";
+  const classicImage = data.photo
+    ? `<img src="${escapeHtml(normalizeUrl(data.photo))}" width="${size}" height="${size}" alt="${escapeHtml(data.name)}" style="display:block;width:${size}px;height:${size}px;object-fit:cover;border:0;border-radius:${radius};" />`
+    : "";
+
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${font};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${font};background:${pale};border-left:3px solid ${accent};">
   <tr>
-    ${imageCell(data)}
-    <td valign="top" style="padding:0;">${detailsTable(data)}</td>
+    ${classicImage ? `<td valign="top" style="padding:12px 0 12px 12px;">${classicImage}</td>` : ""}
+    <td valign="top" style="padding:12px 12px 12px ${classicImage ? "16px" : "12px"};">${detailsTable(data)}</td>
   </tr>
 </table>`.trim();
 };
@@ -386,11 +392,11 @@ const buildBrand = (data) => {
   ].join("");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:520px;border-collapse:separate;border-spacing:0;font-family:${font};border:1px solid ${neutralBorder};border-radius:8px;overflow:hidden;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:520px;border-collapse:separate;border-spacing:0;font-family:${font};border:1px solid ${neutralBorder};border-radius:8px;overflow:hidden;">
   <tr>
     <td style="width:7px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
     <td style="padding:16px;background:${pale};">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;border-collapse:collapse;">
         <tr>
           ${data.photo ? `<td valign="top" style="width:66px;padding:0 14px 0 0;"><img src="${escapeHtml(normalizeUrl(data.photo))}" width="58" height="58" alt="${escapeHtml(data.company || data.name)}" style="display:block;width:58px;height:58px;object-fit:cover;border:0;border-radius:${data.roundedImage ? "999px" : "8px"};" /></td>` : ""}
           <td valign="top" style="padding:0;">
@@ -426,22 +432,16 @@ const buildBanner = (data) => {
   const socials = socialTextLinks(data, " | ");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;border-collapse:collapse;font-family:${font};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:560px;border-collapse:collapse;font-family:${font};background:${pale};border-left:3px solid ${accent};">
   <tr>
-    <td style="padding:0 0 10px;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;background:${accent};">
-        <tr>
-          <td style="padding:12px 14px;color:#ffffff;">
-            <div style="font-size:17px;line-height:21px;font-weight:bold;color:#ffffff;">${escapeHtml(data.name)}</div>
-            <div style="font-size:12px;line-height:16px;color:#ffffff;">${escapeHtml(data.title)}${data.company ? `, ${escapeHtml(data.company)}` : ""}</div>
-          </td>
-          ${data.photo ? `<td align="right" style="width:74px;padding:8px 12px 8px 0;"><img src="${escapeHtml(normalizeUrl(data.photo))}" width="54" height="54" alt="${escapeHtml(data.name)}" style="display:block;width:54px;height:54px;object-fit:cover;border:2px solid #ffffff;border-radius:${data.roundedImage ? "999px" : "8px"};" /></td>` : ""}
-        </tr>
-      </table>
+    <td ${data.photo ? 'colspan="2"' : ""} style="padding:12px 14px;background:${accent};color:#ffffff;">
+      <div style="font-size:17px;line-height:21px;font-weight:bold;color:#ffffff;">${escapeHtml(data.name)}</div>
+      <div style="font-size:12px;line-height:16px;color:#ffffff;">${escapeHtml(data.title)}${data.company ? `, ${escapeHtml(data.company)}` : ""}</div>
     </td>
+    ${data.photo ? `<td align="right" style="width:74px;padding:8px 12px 8px 0;background:${accent};"><img src="${escapeHtml(normalizeUrl(data.photo))}" width="54" height="54" alt="${escapeHtml(data.name)}" style="display:block;width:54px;height:54px;object-fit:cover;border:2px solid #ffffff;border-radius:${data.roundedImage ? "999px" : "8px"};" /></td>` : ""}
   </tr>
   <tr>
-    <td style="padding:10px 12px;background:${pale};border-left:3px solid ${accent};">
+    <td ${data.photo ? 'colspan="3"' : ""} style="padding:10px 12px;background:${pale};">
       <div style="font-size:12px;line-height:18px;color:${textColor};">
         ${data.email ? `<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a>` : ""}
         ${data.phone ? ` <span style="color:#c7ced6;">|</span> <a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a>` : ""}
@@ -488,7 +488,7 @@ const buildSplit = (data) => {
   const socials = socialTextLinks(data, " | ");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;border-collapse:collapse;font-family:${font};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:560px;border-collapse:collapse;font-family:${font};">
   <tr>
     <td valign="top" style="width:190px;padding:14px 16px;background:${pale};border-right:4px solid ${accent};">
       ${data.photo ? `<img src="${escapeHtml(normalizeUrl(data.photo))}" width="62" height="62" alt="${escapeHtml(data.name)}" style="display:block;width:62px;height:62px;object-fit:cover;border:0;border-radius:${data.roundedImage ? "999px" : "8px"};margin-bottom:10px;" />` : ""}
@@ -553,7 +553,7 @@ const buildLetter = (data) => {
   const socials = socialTextLinks(data, " | ");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:500px;border-collapse:collapse;font-family:${font};background:${pale};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:500px;border-collapse:collapse;font-family:${font};background:${pale};">
   <tr>
     <td style="padding:10px 12px;border-bottom:1px solid ${border};">
       <div style="font-size:15px;line-height:20px;color:${textColor};"><strong>${escapeHtml(data.name)}</strong></div>
