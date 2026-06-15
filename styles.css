@@ -563,7 +563,7 @@ input[type="range"] {
   margin-top: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: auto;
   background: #fff;
 }
 
@@ -596,6 +596,8 @@ input[type="range"] {
 }
 
 .mail-body {
+  width: 760px;
+  max-width: 100%;
   min-height: 360px;
   padding: clamp(18px, 4vw, 46px);
   color: #344054;
@@ -607,6 +609,21 @@ input[type="range"] {
   margin-top: 28px;
   max-width: 100%;
   overflow: auto;
+}
+
+.signature-preview > table {
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.signature-preview:hover > table {
+  box-shadow: 0 14px 34px rgba(31, 41, 51, 0.14);
+  transform: translateY(-1px);
+}
+
+.signature-preview:hover img[src^="data:image"] {
+  filter: saturate(1.05);
 }
 
 .signature-preview:focus {
@@ -651,6 +668,15 @@ input[type="range"] {
   .controls-panel {
     position: static;
     max-height: none;
+  }
+
+  .mail-frame {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mail-body {
+    width: 760px;
+    max-width: none;
   }
 }
 

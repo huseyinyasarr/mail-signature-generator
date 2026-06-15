@@ -573,6 +573,77 @@ const buildLetter = (data) => {
 </table>`.trim();
 };
 
+const decorativePhoto = (data, size, accent, pale, mode) => {
+  if (!data.photo) return "";
+  const radius = data.roundedImage ? "999px" : "10px";
+  const photo = `<img src="${escapeHtml(normalizeUrl(data.photo))}" width="${size}" height="${size}" alt="${escapeHtml(data.name)}" style="display:block;width:${size}px;height:${size}px;object-fit:cover;border:0;border-radius:${radius};" />`;
+
+  if (mode === "spark") {
+    return `
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="padding:0 4px 0 0;color:${accent};font-size:16px;line-height:16px;">✦</td>
+          <td rowspan="2" style="padding:0;border:3px solid ${accent};border-radius:${radius};">${photo}</td>
+          <td style="padding:0 0 0 5px;color:${accent};font-size:11px;line-height:11px;">✧</td>
+        </tr>
+        <tr>
+          <td style="padding:0;color:${accent};font-size:9px;line-height:9px;">•</td>
+          <td style="padding:0;color:${accent};font-size:14px;line-height:14px;">✦</td>
+        </tr>
+      </table>`;
+  }
+
+  if (mode === "halo") {
+    return `<div style="display:inline-block;padding:7px;background:${pale};border:2px solid ${accent};border-radius:${data.roundedImage ? "999px" : "14px"};">${photo}</div>`;
+  }
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr>
+        <td style="width:10px;color:${accent};font-size:14px;line-height:14px;">•</td>
+        <td rowspan="3" style="padding:0 6px;border:2px solid ${accent};border-radius:${radius};">${photo}</td>
+        <td style="width:10px;color:${accent};font-size:10px;line-height:10px;">•</td>
+      </tr>
+      <tr>
+        <td style="color:${accent};font-size:8px;line-height:8px;">•</td>
+        <td style="color:${accent};font-size:14px;line-height:14px;">•</td>
+      </tr>
+      <tr>
+        <td style="color:${accent};font-size:12px;line-height:12px;">•</td>
+        <td style="color:${accent};font-size:8px;line-height:8px;">•</td>
+      </tr>
+    </table>`;
+};
+
+const buildDecorative = (data, mode) => {
+  const { accent, textColor, font, muted, pale, border } = getTokens(data);
+  const websiteUrl = normalizeUrl(data.website);
+  const ctaUrl = normalizeUrl(data.ctaUrl);
+  const socials = socialTextLinks(data, " | ");
+  const size = Number(data.imageSize) || 76;
+  const label = mode === "spark" ? "✦" : mode === "halo" ? "○" : "•";
+
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:540px;border-collapse:collapse;font-family:${font};background:${pale};border:1px solid ${border};border-radius:8px;">
+  <tr>
+    ${data.photo ? `<td valign="middle" style="padding:14px 0 14px 14px;">${decorativePhoto(data, size, accent, pale, mode)}</td>` : ""}
+    <td valign="middle" style="padding:14px 14px 14px ${data.photo ? "16px" : "14px"};">
+      <div style="font-size:12px;line-height:16px;color:${accent};font-weight:bold;">${label} ${escapeHtml(data.company || "Signature")}</div>
+      <div style="padding-top:3px;font-size:18px;line-height:22px;font-weight:bold;color:${textColor};">${escapeHtml(data.name)}</div>
+      <div style="padding-top:1px;font-size:13px;line-height:18px;color:${muted};">${escapeHtml(data.title)}</div>
+      <div style="padding-top:8px;font-size:12px;line-height:18px;color:${textColor};">
+        ${data.email ? `<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a>` : ""}
+        ${data.phone ? ` <span style="color:#c7ced6;">|</span> <a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a>` : ""}
+        ${data.website ? ` <span style="color:#c7ced6;">|</span> <a href="${escapeHtml(websiteUrl)}" style="color:${accent};text-decoration:none;">${escapeHtml(data.website)}</a>` : ""}
+      </div>
+      ${socials ? `<div style="padding-top:5px;font-size:12px;line-height:17px;">${socials}</div>` : ""}
+      ${ctaUrl && data.ctaText ? `<div style="padding-top:8px;"><a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:${accent};color:#ffffff;text-decoration:none;font-size:12px;font-weight:bold;line-height:16px;padding:7px 11px;border-radius:6px;">${escapeHtml(data.ctaText)}</a></div>` : ""}
+      ${data.disclaimer ? `<div style="padding-top:8px;max-width:430px;font-size:10px;line-height:14px;color:#98a2b3;">${escapeHtml(data.disclaimer).replace(/\n/g, "<br />")}</div>` : ""}
+    </td>
+  </tr>
+</table>`.trim();
+};
+
 const buildSignatureHtml = (data) => {
   const builders = {
     classic: buildClassic,
@@ -582,6 +653,9 @@ const buildSignatureHtml = (data) => {
     split: buildSplit,
     stamp: buildStamp,
     letter: buildLetter,
+    orbit: (value) => buildDecorative(value, "orbit"),
+    spark: (value) => buildDecorative(value, "spark"),
+    halo: (value) => buildDecorative(value, "halo"),
   };
 
   return scaleSignatureHtml((builders[data.layout] || buildClassic)(data), data.signatureScale);
