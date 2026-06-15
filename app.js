@@ -195,7 +195,16 @@ const changeZoom = (amount) => {
 const parsePalette = (value) =>
   String(value || "")
     .match(/#?[0-9a-f]{6}|#?[0-9a-f]{3}/gi)
-    ?.map((color) => (color.startsWith("#") ? color : `#${color}`)) || [];
+    ?.map((color) => {
+      const hex = color.replace("#", "");
+      const expanded = hex.length === 3 ? hex.split("").map((part) => `${part}${part}`).join("") : hex;
+      return `#${expanded.toLowerCase()}`;
+    }) || [];
+
+const getSoftColor = (color) => {
+  const [accent] = parsePalette(color);
+  return accent ? `${accent}1f` : "#f3f7f5";
+};
 
 const applyPalette = (value) => {
   const [accent, textColor, surfaceColor] = parsePalette(value);
@@ -206,7 +215,7 @@ const applyPalette = (value) => {
 
   form.elements.accent.value = accent;
   if (textColor) form.elements.textColor.value = textColor;
-  currentSurfaceColor = surfaceColor || `${accent}12`;
+  currentSurfaceColor = surfaceColor || getSoftColor(accent);
   refreshDummyPhoto();
   render();
   setStatus("Palet uygulandı.");
@@ -229,7 +238,8 @@ const getTokens = (data) => ({
   font: escapeHtml(data.fontFamily),
   muted: "#667085",
   pale: escapeHtml(data.surfaceColor || "#f3f7f5"),
-  border: "#d8ded6",
+  border: escapeHtml(data.surfaceColor || "#d8ded6"),
+  neutralBorder: "#d8ded6",
 });
 
 const iconPaths = {
@@ -269,7 +279,7 @@ const line = (label, value, href, color) => {
   const safeHref = escapeHtml(href || value);
   return `
     <tr>
-      <td style="padding:2px 0;font-size:13px;line-height:18px;color:${color};">
+      <td style="padding:2px 12px;font-size:13px;line-height:18px;color:${color};">
         ${contactIcon(label, color)}
         <a href="${safeHref}" style="color:${color};text-decoration:none;">${safeValue}</a>
       </td>
@@ -310,7 +320,7 @@ const imageCell = (data) => {
 };
 
 const detailsTable = (data) => {
-  const { accent, textColor, muted } = getTokens(data);
+  const { accent, textColor, muted, pale } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const ctaUrl = normalizeUrl(data.ctaUrl);
   const socials = [
@@ -324,21 +334,21 @@ const detailsTable = (data) => {
     .join('<span style="display:inline-block;margin-right:8px;color:#c7ced6;">|</span>');
 
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:${pale};border-left:3px solid ${accent};">
       <tr>
-        <td style="padding:0 0 4px;font-family:${escapeHtml(data.fontFamily)};">
+        <td style="padding:10px 12px 4px;font-family:${escapeHtml(data.fontFamily)};">
           <div style="font-size:18px;line-height:22px;font-weight:bold;color:${textColor};">${escapeHtml(data.name)}</div>
           <div style="font-size:13px;line-height:18px;color:${muted};">${escapeHtml(data.title)}${data.company ? ` · ${escapeHtml(data.company)}` : ""}</div>
         </td>
       </tr>
-      ${data.showDivider ? `<tr><td style="padding:7px 0;"><div style="height:2px;width:42px;background:${accent};line-height:2px;font-size:2px;">&nbsp;</div></td></tr>` : ""}
+      ${data.showDivider ? `<tr><td style="padding:7px 12px;"><div style="height:2px;width:42px;background:${accent};line-height:2px;font-size:2px;">&nbsp;</div></td></tr>` : ""}
       ${line("mail", data.email, `mailto:${data.email}`, textColor)}
       ${line("phone", data.phone, `tel:${data.phone.replace(/\s/g, "")}`, textColor)}
       ${line("web", data.website, websiteUrl, textColor)}
-      ${data.address ? `<tr><td style="padding:2px 0;font-size:13px;line-height:18px;color:${textColor};">${escapeHtml(data.address).replace(/\n/g, "<br />")}</td></tr>` : ""}
-      ${socials ? `<tr><td style="padding-top:8px;">${socials}</td></tr>` : ""}
-      ${ctaUrl && data.ctaText ? `<tr><td style="padding-top:10px;"><a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:${accent};color:#ffffff;text-decoration:none;font-size:12px;font-weight:bold;line-height:16px;padding:8px 12px;border-radius:6px;">${escapeHtml(data.ctaText)}</a></td></tr>` : ""}
-      ${data.disclaimer ? `<tr><td style="padding-top:10px;max-width:430px;font-size:10px;line-height:14px;color:#98a2b3;">${escapeHtml(data.disclaimer).replace(/\n/g, "<br />")}</td></tr>` : ""}
+      ${data.address ? `<tr><td style="padding:2px 12px;font-size:13px;line-height:18px;color:${textColor};">${escapeHtml(data.address).replace(/\n/g, "<br />")}</td></tr>` : ""}
+      ${socials ? `<tr><td style="padding:8px 12px 0;">${socials}</td></tr>` : ""}
+      ${ctaUrl && data.ctaText ? `<tr><td style="padding:10px 12px 0;"><a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:${accent};color:#ffffff;text-decoration:none;font-size:12px;font-weight:bold;line-height:16px;padding:8px 12px;border-radius:6px;">${escapeHtml(data.ctaText)}</a></td></tr>` : ""}
+      ${data.disclaimer ? `<tr><td style="padding:10px 12px 10px;max-width:430px;font-size:10px;line-height:14px;color:#98a2b3;">${escapeHtml(data.disclaimer).replace(/\n/g, "<br />")}</td></tr>` : ""}
     </table>`;
 };
 
@@ -364,7 +374,7 @@ const buildClassic = (data) => {
 };
 
 const buildBrand = (data) => {
-  const { accent, textColor, font, muted, pale, border } = getTokens(data);
+  const { accent, textColor, font, muted, pale, neutralBorder } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const ctaUrl = normalizeUrl(data.ctaUrl);
   const socials = [
@@ -376,7 +386,7 @@ const buildBrand = (data) => {
   ].join("");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:520px;border-collapse:separate;border-spacing:0;font-family:${font};border:1px solid ${border};border-radius:8px;overflow:hidden;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:520px;border-collapse:separate;border-spacing:0;font-family:${font};border:1px solid ${neutralBorder};border-radius:8px;overflow:hidden;">
   <tr>
     <td style="width:7px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
     <td style="padding:16px;background:${pale};">
@@ -394,7 +404,7 @@ const buildBrand = (data) => {
   </tr>
   <tr>
     <td style="width:7px;background:${accent};font-size:1px;line-height:1px;">&nbsp;</td>
-    <td style="padding:13px 16px;background:#ffffff;">
+    <td style="padding:13px 16px;background:#ffffff;border-top:4px solid ${pale};">
       <div>
         ${contactRow("mail", data.email, `mailto:${data.email}`, textColor)}
         ${contactRow("phone", data.phone, `tel:${data.phone.replace(/\s/g, "")}`, textColor)}
@@ -410,7 +420,7 @@ const buildBrand = (data) => {
 };
 
 const buildBanner = (data) => {
-  const { accent, textColor, font, muted } = getTokens(data);
+  const { accent, textColor, font, muted, pale } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const ctaUrl = normalizeUrl(data.ctaUrl);
   const socials = socialTextLinks(data, " | ");
@@ -431,7 +441,7 @@ const buildBanner = (data) => {
     </td>
   </tr>
   <tr>
-    <td style="padding:0;">
+    <td style="padding:10px 12px;background:${pale};border-left:3px solid ${accent};">
       <div style="font-size:12px;line-height:18px;color:${textColor};">
         ${data.email ? `<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a>` : ""}
         ${data.phone ? ` <span style="color:#c7ced6;">|</span> <a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a>` : ""}
@@ -447,26 +457,26 @@ const buildBanner = (data) => {
 };
 
 const buildMinimal = (data) => {
-  const { accent, textColor, font, muted } = getTokens(data);
+  const { accent, textColor, font, muted, pale } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const socials = socialTextLinks(data, " | ");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${font};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${font};background:${pale};">
   <tr>
-    <td style="padding:0 0 5px;font-size:14px;line-height:19px;color:${textColor};">
+    <td style="padding:8px 10px 5px;font-size:14px;line-height:19px;color:${textColor};">
       <strong>${escapeHtml(data.name)}</strong>${data.company ? ` <span style="color:${muted};">from ${escapeHtml(data.company)}</span>` : ""}
     </td>
   </tr>
   <tr>
-    <td style="padding:0;font-size:12px;line-height:18px;color:${muted};">
+    <td style="padding:0 10px;font-size:12px;line-height:18px;color:${muted};">
       ${data.title ? `${escapeHtml(data.title)}<br />` : ""}
       ${data.email ? `<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a>` : ""}
       ${data.phone ? ` <span style="color:#c7ced6;">|</span> <a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a>` : ""}
       ${data.website ? ` <span style="color:#c7ced6;">|</span> <a href="${escapeHtml(websiteUrl)}" style="color:${accent};text-decoration:none;">${escapeHtml(data.website)}</a>` : ""}
     </td>
   </tr>
-  ${socials ? `<tr><td style="padding-top:5px;font-size:12px;line-height:17px;">${socials}</td></tr>` : ""}
+  ${socials ? `<tr><td style="padding:5px 10px 0;font-size:12px;line-height:17px;">${socials}</td></tr>` : ""}
   ${disclaimerRow(data)}
 </table>`.trim();
 };
@@ -486,7 +496,7 @@ const buildSplit = (data) => {
       <div style="padding-top:3px;font-size:12px;line-height:17px;color:${muted};">${escapeHtml(data.title)}</div>
       ${data.company ? `<div style="padding-top:8px;font-size:12px;line-height:16px;font-weight:bold;color:${accent};">${escapeHtml(data.company)}</div>` : ""}
     </td>
-    <td valign="top" style="padding:14px 0 14px 16px;">
+    <td valign="top" style="padding:14px 12px 14px 16px;background:${pale};">
       <div style="font-size:12px;line-height:19px;color:${textColor};">
         ${data.email ? `<div>${contactIcon("mail")}<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a></div>` : ""}
         ${data.phone ? `<div>${contactIcon("phone")}<a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a></div>` : ""}
@@ -502,7 +512,7 @@ const buildSplit = (data) => {
 };
 
 const buildStamp = (data) => {
-  const { accent, textColor, font, muted, border } = getTokens(data);
+  const { accent, textColor, font, muted, pale, border } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const socials = socialTextLinks(data, " | ");
   const initials = escapeHtml(
@@ -521,8 +531,8 @@ const buildStamp = (data) => {
   return `
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:${font};">
   <tr>
-    <td valign="middle" style="width:70px;height:70px;border:2px solid ${accent};border-radius:${data.photo && data.roundedImage ? "999px" : "8px"};text-align:center;color:${accent};font-size:20px;line-height:70px;font-weight:bold;overflow:hidden;">${stampMark}</td>
-    <td valign="middle" style="padding-left:14px;">
+    <td valign="middle" style="width:70px;height:70px;border:2px solid ${accent};background:${pale};border-radius:${data.photo && data.roundedImage ? "999px" : "8px"};text-align:center;color:${accent};font-size:20px;line-height:70px;font-weight:bold;overflow:hidden;">${stampMark}</td>
+    <td valign="middle" style="padding:8px 10px 8px 14px;background:${pale};">
       <div style="font-size:16px;line-height:20px;font-weight:bold;color:${textColor};">${escapeHtml(data.name)}</div>
       <div style="font-size:12px;line-height:17px;color:${muted};">${escapeHtml(data.title)}${data.company ? ` | ${escapeHtml(data.company)}` : ""}</div>
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid ${border};font-size:12px;line-height:18px;color:${textColor};">
@@ -538,27 +548,27 @@ const buildStamp = (data) => {
 };
 
 const buildLetter = (data) => {
-  const { accent, textColor, font, muted, border } = getTokens(data);
+  const { accent, textColor, font, muted, pale, border } = getTokens(data);
   const websiteUrl = normalizeUrl(data.website);
   const socials = socialTextLinks(data, " | ");
 
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:500px;border-collapse:collapse;font-family:${font};">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:500px;border-collapse:collapse;font-family:${font};background:${pale};">
   <tr>
-    <td style="padding:0 0 10px;border-bottom:1px solid ${border};">
+    <td style="padding:10px 12px;border-bottom:1px solid ${border};">
       <div style="font-size:15px;line-height:20px;color:${textColor};"><strong>${escapeHtml(data.name)}</strong></div>
       <div style="font-size:12px;line-height:17px;color:${muted};">${escapeHtml(data.title)}${data.company ? ` | ${escapeHtml(data.company)}` : ""}</div>
     </td>
   </tr>
   <tr>
-    <td style="padding-top:9px;font-size:12px;line-height:18px;color:${textColor};">
+    <td style="padding:9px 12px 0;font-size:12px;line-height:18px;color:${textColor};">
       ${data.email ? `<a href="mailto:${escapeHtml(data.email)}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.email)}</a>` : ""}
       ${data.phone ? ` <span style="color:#c7ced6;">|</span> <a href="tel:${escapeHtml(data.phone.replace(/\s/g, ""))}" style="color:${textColor};text-decoration:none;">${escapeHtml(data.phone)}</a>` : ""}
       ${data.website ? ` <span style="color:#c7ced6;">|</span> <a href="${escapeHtml(websiteUrl)}" style="color:${accent};text-decoration:none;">${escapeHtml(data.website)}</a>` : ""}
       ${data.address ? `<br /><span style="color:${muted};">${escapeHtml(data.address).replace(/\n/g, "<br />")}</span>` : ""}
     </td>
   </tr>
-  ${socials ? `<tr><td style="padding-top:6px;font-size:12px;line-height:17px;">${socials}</td></tr>` : ""}
+  ${socials ? `<tr><td style="padding:6px 12px 0;font-size:12px;line-height:17px;">${socials}</td></tr>` : ""}
   ${disclaimerRow(data)}
 </table>`.trim();
 };
