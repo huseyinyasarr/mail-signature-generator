@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://huseyinyasar.github.io/mail-signature-web/sitemap.xml

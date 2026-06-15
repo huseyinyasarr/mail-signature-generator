@@ -1,0 +1,16 @@
+{
+  "name": "Mail Signature Generator",
+  "short_name": "Signature",
+  "description": "Create and copy a professional email signature for Gmail.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f6f2",
+  "theme_color": "#146c63",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
