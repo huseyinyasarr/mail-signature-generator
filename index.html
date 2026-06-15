@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail Signature Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="Mail imza oluşturucu">
+        <aside class="panel controls-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Mail Signature</p>
+              <h1>İmzanı tasarla</h1>
+              <p class="privacy-note">Veriler tarayıcıda kalır, kayıt yapılmaz.</p>
+            </div>
+            <button class="icon-button" id="resetBtn" type="button" aria-label="Varsayılana dön" title="Varsayılana dön">
+              <span aria-hidden="true">↺</span>
+            </button>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Ayar bölümleri">
+            <button class="tab is-active" type="button" data-tab="content">İçerik</button>
+            <button class="tab" type="button" data-tab="style">Stil</button>
+            <button class="tab" type="button" data-tab="social">Sosyal</button>
+          </div>
+
+          <form id="signatureForm" class="form-stack">
+            <div class="tab-panel is-active" data-panel="content">
+              <label>
+                <span>Ad Soyad</span>
+                <input name="name" type="text" autocomplete="name" />
+              </label>
+              <label>
+                <span>Ünvan</span>
+                <input name="title" type="text" autocomplete="organization-title" />
+              </label>
+              <label>
+                <span>Şirket</span>
+                <input name="company" type="text" autocomplete="organization" />
+              </label>
+              <label>
+                <span>E-posta</span>
+                <input name="email" type="email" autocomplete="email" />
+              </label>
+              <label>
+                <span>Telefon</span>
+                <input name="phone" type="tel" autocomplete="tel" />
+              </label>
+              <label>
+                <span>Web sitesi</span>
+                <input name="website" type="url" autocomplete="url" />
+              </label>
+              <label>
+                <span>Adres</span>
+                <textarea name="address" rows="3"></textarea>
+              </label>
+              <div class="field-group">
+                <span class="field-title">Profil / logo görseli</span>
+                <label class="file-field">
+                  <input id="photoUpload" type="file" accept="image/png,image/jpeg,image/webp" />
+                  <span>Fotoğraf yükle</span>
+                </label>
+                <div id="cropPanel" class="crop-panel" hidden>
+                  <div class="crop-stage">
+                    <canvas id="cropCanvas" width="180" height="180" aria-label="Kırpma önizlemesi"></canvas>
+                    <div class="crop-guides" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div class="shape-previews" aria-label="Görsel şekil önizlemeleri">
+                    <figure>
+                      <img id="shapePreviewSquare" alt="Kare önizleme" />
+                      <figcaption>Kare</figcaption>
+                    </figure>
+                    <figure>
+                      <img id="shapePreviewCircle" alt="Yuvarlak önizleme" />
+                      <figcaption>Yuvarlak</figcaption>
+                    </figure>
+                    <figure>
+                      <img id="shapePreviewRect" alt="Dikdörtgen önizleme" />
+                      <figcaption>Dikdörtgen</figcaption>
+                    </figure>
+                  </div>
+                  <div class="zoom-controls" aria-label="Yakınlaştırma kontrolleri">
+                    <button id="zoomOutBtn" class="icon-button" type="button" aria-label="Uzaklaştır" title="Uzaklaştır">
+                      <span aria-hidden="true">−</span>
+                    </button>
+                    <output id="cropZoomValue">1x</output>
+                    <button id="zoomInBtn" class="icon-button" type="button" aria-label="Yakınlaştır" title="Yakınlaştır">
+                      <span aria-hidden="true">+</span>
+                    </button>
+                  </div>
+                  <label class="range-field">
+                    <span>Yakınlaştır</span>
+                    <input id="cropZoom" type="range" min="1" max="3" step="0.05" value="1" />
+                  </label>
+                  <label class="range-field">
+                    <span>Yatay konum</span>
+                    <input id="cropX" type="range" min="-100" max="100" step="1" value="0" />
+                    <output id="cropXValue">0</output>
+                  </label>
+                  <label class="range-field">
+                    <span>Dikey konum</span>
+                    <input id="cropY" type="range" min="-100" max="100" step="1" value="0" />
+                    <output id="cropYValue">0</output>
+                  </label>
+                  <div class="crop-actions">
+                    <button id="applyCropBtn" class="secondary-action" type="button">Kırpmayı uygula</button>
+                    <button id="removePhotoBtn" class="icon-button" type="button" aria-label="Görseli kaldır" title="Görseli kaldır">
+                      <span aria-hidden="true">×</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="style">
+              <div class="field-group">
+                <span class="field-title">Şablon</span>
+                <div class="template-grid">
+                  <label>
+                    <input type="radio" name="layout" value="classic" checked />
+                    <span>Klasik</span>
+                    <small>Net kişi + iletişim</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="brand" />
+                    <span>Marka</span>
+                    <small>Logo/renk ağırlıklı</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="banner" />
+                    <span>Banner</span>
+                    <small>Yatay ve canlı</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="minimal" />
+                    <span>Minimal</span>
+                    <small>Sessiz, düz imza</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="split" />
+                    <span>Split</span>
+                    <small>İki kolonlu kurumsal</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="stamp" />
+                    <span>Damga</span>
+                    <small>Rozet + iletişim</small>
+                  </label>
+                  <label>
+                    <input type="radio" name="layout" value="letter" />
+                    <span>Letter</span>
+                    <small>Mail içi sade blok</small>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <span class="field-title">Renk paleti</span>
+                <label>
+                  <span>Hazır palet</span>
+                  <select id="palettePreset">
+                    <option value="">Manuel renkler</option>
+                    <option value="#146c63,#1f2933,#f3f7f5">Modern Yeşil</option>
+                    <option value="#0f766e,#111827,#ecfeff">Teknoloji</option>
+                    <option value="#b42318,#1d2939,#fff4ed">Enerjik</option>
+                    <option value="#5b5bd6,#101828,#f4f3ff">SaaS</option>
+                    <option value="#0b4a6f,#182230,#eff8ff">Kurumsal Mavi</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Özel palet</span>
+                  <input id="customPalette" type="text" placeholder="#146c63, #1f2933, #f3f7f5" />
+                </label>
+                <button id="applyPaletteBtn" class="secondary-action" type="button">Paleti uygula</button>
+              </div>
+
+              <div class="grid-two">
+                <label>
+                  <span>Ana renk</span>
+                  <input name="accent" type="color" />
+                </label>
+                <label>
+                  <span>Metin</span>
+                  <input name="textColor" type="color" />
+                </label>
+              </div>
+
+              <label>
+                <span>Yazı tipi</span>
+                <select name="fontFamily">
+                  <option value="Arial, Helvetica, sans-serif">Arial</option>
+                  <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Trebuchet MS', Arial, sans-serif">Trebuchet</option>
+                </select>
+              </label>
+
+              <label class="range-field">
+                <span>Görsel boyutu</span>
+                <input name="imageSize" type="range" min="48" max="104" step="4" />
+                <output id="imageSizeValue"></output>
+              </label>
+              <label class="range-field">
+                <span>İmza boyutu</span>
+                <input name="signatureScale" type="range" min="0.8" max="1.3" step="0.05" />
+                <output id="signatureScaleValue"></output>
+              </label>
+
+              <div class="field-group">
+                <span class="field-title">Seçenekler</span>
+                <label class="check-row"><input name="showDivider" type="checkbox" /> Ayraç kullan</label>
+                <label class="check-row"><input name="roundedImage" type="checkbox" /> Yuvarlak görsel</label>
+              </div>
+
+              <label>
+                <span>Buton metni</span>
+                <input name="ctaText" type="text" />
+              </label>
+              <label>
+                <span>Buton linki</span>
+                <input name="ctaUrl" type="url" />
+              </label>
+              <label>
+                <span>Yasal not</span>
+                <textarea name="disclaimer" rows="3"></textarea>
+              </label>
+            </div>
+
+            <div class="tab-panel" data-panel="social">
+              <label>
+                <span>LinkedIn</span>
+                <input name="linkedin" type="url" />
+              </label>
+              <label>
+                <span>Instagram</span>
+                <input name="instagram" type="url" />
+              </label>
+              <label>
+                <span>X / Twitter</span>
+                <input name="twitter" type="url" />
+              </label>
+              <label>
+                <span>GitHub</span>
+                <input name="github" type="url" />
+              </label>
+              <label>
+                <span>WhatsApp</span>
+                <input name="whatsapp" type="url" />
+              </label>
+            </div>
+          </form>
+        </aside>
+
+        <section class="preview-column">
+          <div class="panel preview-panel">
+            <div class="preview-toolbar">
+              <div>
+                <p class="eyebrow">Canlı önizleme</p>
+                <h2>Gmail'e hazır çıktı</h2>
+              </div>
+              <div class="toolbar-actions">
+                <button id="copyRichBtn" class="primary-action" type="button" title="Görsel imzayı kopyala">
+                  <span aria-hidden="true">⧉</span>
+                  İmzayı kopyala
+                </button>
+                <button id="copyHtmlBtn" class="icon-button" type="button" aria-label="HTML kopyala" title="HTML kopyala">
+                  <span aria-hidden="true">&lt;/&gt;</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="mail-frame" aria-label="Mail önizleme">
+              <div class="mail-topbar">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="mail-body">
+                <p>Merhaba,</p>
+                <p>Detayları aşağıda paylaşıyorum.</p>
+                <div id="signaturePreview" class="signature-preview" contenteditable="true" aria-label="Kopyalanabilir imza önizlemesi"></div>
+              </div>
+            </div>
+            <p class="status" id="statusText" aria-live="polite"></p>
+            <p class="privacy-footnote">Bu araç form verilerini sunucuya göndermez; kopyalama işlemi tarayıcında yapılır.</p>
+          </div>
+
+          <div class="panel code-panel">
+            <div class="code-heading">
+              <div>
+                <p class="eyebrow">Kaynak</p>
+                <h2>Inline HTML</h2>
+              </div>
+              <button id="selectHtmlBtn" class="icon-button" type="button" aria-label="HTML seç" title="HTML seç">
+                <span aria-hidden="true">⌖</span>
+              </button>
+            </div>
+            <textarea id="htmlOutput" spellcheck="false" aria-label="Üretilen imza HTML kodu"></textarea>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
